@@ -100,9 +100,8 @@
 </template>
 
 <script setup>
-  import { collection, addDoc } from "firebase/firestore";
-  import { getFirestore } from "@firebase/firestore";
-  import { initializeApp } from "firebase-admin";
+  import { initializeApp } from "firebase/app";
+  import { getFirestore, collection, addDoc } from "@firebase/firestore";
   definePageMeta({
     middleware: ["auth"],
   });
@@ -178,6 +177,21 @@
     });
   }
 
+  const addAttractionApp = initializeApp(
+    {
+      apiKey: process.env.FIREBASE_API_KEY,
+      authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+      appId: process.env.FIREBASE_APP_ID,
+      measurementId: process.env.FIREBASE_MEASUREMENT_ID,
+    },
+    "[add-attraction]"
+  );
+
+  const db = getFirestore(addAttractionApp);
+
   async function addAttraction() {
     console.log("Saving");
 
@@ -194,13 +208,10 @@
       address: address.value,
     };
     try {
-      const docRef = await $fetch("/api/firestore/add", {
-        method: "POST",
-        body: JSON.stringify(activity),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const colRef = collection(db, "activities");
+      console.log("colRef", colRef);
+      const docRef = await addDoc(colRef, activity);
+      console.log("Document written with ID: ", docRef.id);
     } catch (error) {
       console.error("Error adding attraction:", error);
     }

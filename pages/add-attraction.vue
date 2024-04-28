@@ -192,7 +192,6 @@
       (existingCategory) => existingCategory.id !== category.id
     );
   }
-
   async function addAttraction() {
     const { firestore } = useFirebaseClient();
     console.log("Saving attraction");
@@ -218,6 +217,10 @@
       openingHoursOnWebsite: openingHoursOnWebsite.value,
       address: address.value,
       categories: categoryIds,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: useCurrentUser().displayName,
+      updatedBy: useCurrentUser().displayName,
     };
     try {
       const batch = writeBatch(firestore);

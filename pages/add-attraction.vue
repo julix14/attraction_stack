@@ -227,6 +227,8 @@
       await batch.commit();
 
       console.log("Attraction saved");
+
+      window.location.reload();
     } catch (error) {
       console.error("Error adding attraction:", error);
     }

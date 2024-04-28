@@ -19,6 +19,12 @@ export default defineNuxtConfig({
       appId: process.env.FIREBASE_APP_ID,
       measurementId: process.env.FIREBASE_MEASUREMENT_ID,
     },
+    appCheck: {
+      debug: process.env.NODE_ENV !== "production",
+      isTokenAutoRefreshEnabled: true,
+      provider: "ReCaptchaV3",
+      key: "6LctAsopAAAAAGPUQLCRKoxSjlMko-zRy17c8ikL",
+    },
   },
   nitro: {
     firebase: {

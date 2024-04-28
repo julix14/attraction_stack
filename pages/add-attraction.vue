@@ -171,8 +171,6 @@
     ];
 
     days.forEach((day) => {
-      console.log(openingHours.value[day]);
-
       openingHours.value[day] = JSON.parse(
         JSON.stringify(openingHours.value["monday"])
       );
@@ -218,26 +216,19 @@
       categories: categoryIds,
     };
     try {
-      const docRef = await addDoc(
-        collection(firestore, "activities"),
-        activity
-      );
-      console.log("Document written with ID: ", docRef.id);
-    } catch (error) {
-      console.error("Error adding attraction:", error);
-    }
-    try {
-      console.log("New categories", newCategories);
       const batch = writeBatch(firestore);
+      const activityRef = doc(firestore, "activities", activity.name);
+      batch.set(activityRef, activity);
       newCategories.forEach((category) => {
-        const categoryRef = doc(firestore, "categories", category.id);
+        const categoryRef = doc(firestore, "categories", category.name);
         batch.set(categoryRef, category);
       });
-      console.log("Adding categories");
+
       await batch.commit();
-      console.log("Categories added");
+
+      console.log("Attraction saved");
     } catch (error) {
-      console.error("Error adding categories:", error);
+      console.error("Error adding attraction:", error);
     }
   }
 </script>

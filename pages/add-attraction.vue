@@ -61,6 +61,9 @@
             v-model="price"
             placeholder="Enter attraction address" />
         </div>
+        <MultiSelect
+          @category-selected="addCategory"
+          @category-removed="removeCategory" />
       </div>
 
       <div class="flex flex-col">
@@ -175,6 +178,22 @@
       );
     });
   }
+
+  const categories = ref([]);
+
+  function addCategory(category) {
+    categories.value.push(category);
+    console.log("cat add", categories.value);
+  }
+
+  function removeCategory(category) {
+    categories.value = categories.value.filter(
+      (existingCategory) => existingCategory.id !== category.id
+    );
+
+    console.log("cat rm", categories.value);
+  }
+
   async function addAttraction() {
     console.log("Saving");
 
@@ -203,5 +222,3 @@
     }
   }
 </script>
-
-<style></style>

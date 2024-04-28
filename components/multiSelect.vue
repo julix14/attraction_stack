@@ -1,0 +1,104 @@
+<template>
+  <div class="flex flex-col">
+    <p>Categories</p>
+    <div class="flex gap-x-2">
+      <div
+        class="flex items-center gap-x-2 bg-gray-200 p-2 rounded-md"
+        v-for="category in selectedCategories">
+        <p>{{ category.name }}</p>
+        <UIcon
+          name="i-heroicons-x-mark"
+          @click="removeCategory(category)" />
+      </div>
+      <input
+        type="text"
+        v-model="search"
+        @focus="showOptions = true"
+        @input="filterCategories"
+        placeholder="Search categories" />
+    </div>
+    <select
+      multiple
+      v-if="showOptions">
+      <option
+        v-for="category in categoryOptions"
+        :key="category.id"
+        @click="selectCategory(category)">
+        {{ category.name }}
+      </option>
+      <option
+        v-if="categoryOptions.length === 0"
+        key=""
+        @click="createCategory()">
+        Create category "{{ search }}"
+      </option>
+    </select>
+  </div>
+</template>
+
+<script setup>
+  import { useCollection } from "vuefire";
+  import { collection } from "firebase/firestore";
+  import { v4 as uuidv4 } from "uuid";
+
+  const emits = defineEmits(["category-selected", "category-removed"]);
+
+  const { firestore } = useFirebaseClient();
+
+  const categories = useCollection(
+    collection(firestore, "categories").withConverter({
+      fromFirestore(snapshot, options) {
+        const data = snapshot.data(options);
+        return {
+          id: snapshot.id,
+          name: data.name,
+          selected: false,
+        };
+      },
+    })
+  );
+
+  const showOptions = ref(false);
+  const search = ref("");
+  const selectedCategories = computed(() => {
+    return categories.value.filter((category) => category.selected);
+  });
+  const categoryOptions = computed(() => {
+    return categories.value.filter((category) => {
+      return (
+        category.selected === false &&
+        (search.value.trim() === "" ||
+          category.name.toLowerCase().includes(search.value.toLowerCase()))
+      );
+    });
+  });
+
+  categories.value.sort((a, b) => a.name.localeCompare(b.name));
+  categories.value.forEach((category) => {
+    categoryOptions.value.push(category);
+  });
+
+  function selectCategory(category) {
+    category.selected = true;
+    emits("category-selected", category);
+    search.value = "";
+  }
+
+  function removeCategory(category) {
+    category.selected = false;
+    emits("category-removed", category);
+    categories.value.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  function createCategory() {
+    const newCategory = {
+      id: uuidv4(),
+      name: search.value,
+      selected: true,
+    };
+    emits("category-selected", newCategory);
+
+    categories.value.push(newCategory);
+    search.value = "";
+  }
+</script>

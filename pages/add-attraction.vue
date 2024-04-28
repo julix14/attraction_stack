@@ -103,7 +103,7 @@
 </template>
 
 <script setup>
-  import { collection, addDoc } from "firebase/firestore";
+  import { collection, addDoc, writeBatch, doc } from "firebase/firestore";
   definePageMeta({
     middleware: ["auth"],
   });
@@ -183,19 +183,26 @@
 
   function addCategory(category) {
     categories.value.push(category);
-    console.log("cat add", categories.value);
   }
 
   function removeCategory(category) {
     categories.value = categories.value.filter(
       (existingCategory) => existingCategory.id !== category.id
     );
-
-    console.log("cat rm", categories.value);
   }
 
   async function addAttraction() {
-    console.log("Saving");
+    const { firestore } = useFirebaseClient();
+    console.log("Saving attraction");
+    const categoryIds = categories.value.map((category) => category.id);
+
+    const newCategories = categories.value.filter((category) => {
+      return category.new;
+    });
+
+    newCategories.forEach((category) => {
+      delete category.new;
+    });
 
     const activity = {
       isBerlin: isBerlin.value,
@@ -208,10 +215,9 @@
       openingHours: openingHours.value,
       openingHoursOnWebsite: openingHoursOnWebsite.value,
       address: address.value,
+      categories: categoryIds,
     };
     try {
-      const { firestore } = useFirebaseClient();
-
       const docRef = await addDoc(
         collection(firestore, "activities"),
         activity
@@ -219,6 +225,19 @@
       console.log("Document written with ID: ", docRef.id);
     } catch (error) {
       console.error("Error adding attraction:", error);
+    }
+    try {
+      console.log("New categories", newCategories);
+      const batch = writeBatch(firestore);
+      newCategories.forEach((category) => {
+        const categoryRef = doc(firestore, "categories", category.id);
+        batch.set(categoryRef, category);
+      });
+      console.log("Adding categories");
+      await batch.commit();
+      console.log("Categories added");
+    } catch (error) {
+      console.error("Error adding categories:", error);
     }
   }
 </script>

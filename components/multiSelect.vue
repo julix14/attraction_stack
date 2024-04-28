@@ -40,11 +40,12 @@
   import { useCollection } from "vuefire";
   import { collection } from "firebase/firestore";
   import { v4 as uuidv4 } from "uuid";
+  import { setLogLevel } from "firebase/app";
 
   const emits = defineEmits(["category-selected", "category-removed"]);
 
   const { firestore } = useFirebaseClient();
-
+  setLogLevel("debug");
   const categories = useCollection(
     collection(firestore, "categories").withConverter({
       fromFirestore(snapshot, options) {
@@ -53,6 +54,7 @@
           id: snapshot.id,
           name: data.name,
           selected: false,
+          new: false,
         };
       },
     })
@@ -90,11 +92,16 @@
     categories.value.sort((a, b) => a.name.localeCompare(b.name));
   }
 
+  function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  }
+
   function createCategory() {
     const newCategory = {
       id: uuidv4(),
-      name: search.value,
+      name: capitalizeFirstLetter(search.value.trim()),
       selected: true,
+      new: true,
     };
     emits("category-selected", newCategory);
 

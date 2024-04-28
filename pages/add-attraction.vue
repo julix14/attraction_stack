@@ -103,7 +103,7 @@
 </template>
 
 <script setup>
-  import { collection, addDoc, writeBatch, doc } from "firebase/firestore";
+  import { writeBatch, doc } from "firebase/firestore";
   definePageMeta({
     middleware: ["auth"],
   });

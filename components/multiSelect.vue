@@ -40,12 +40,10 @@
   import { useCollection } from "vuefire";
   import { collection } from "firebase/firestore";
   import { v4 as uuidv4 } from "uuid";
-  import { setLogLevel } from "firebase/app";
 
   const emits = defineEmits(["category-selected", "category-removed"]);
 
   const { firestore } = useFirebaseClient();
-  setLogLevel("debug");
   const categories = useCollection(
     collection(firestore, "categories").withConverter({
       fromFirestore(snapshot, options) {

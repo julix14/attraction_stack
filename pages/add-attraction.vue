@@ -1,16 +1,16 @@
 <template>
-  <div>
+  <div class="m-2">
     <p class="font-bold text-xl">Add Attraction</p>
 
     <form @submit.prevent="addAttraction">
       <div class="flex flex-col gap-y-2 mb-2">
-        <div>
+        <div class="flex gap-x-2">
           <p>Is it in Berlin?</p>
-          <UToggle v-model="isBerlin" />
+          <UCheckbox v-model="isBerlin" />
         </div>
-        <div>
+        <div class="flex gap-x-2">
           <p>Is it regionally?</p>
-          <UToggle v-model="isRegional" />
+          <UCheckbox v-model="isRegional" />
         </div>
         <div>
           <p>Name</p>
@@ -97,7 +97,11 @@
             :opening-hours="openingHours.sunday" />
         </div>
       </div>
-      <UButton type="submit">Save</UButton>
+      <UButton
+        type="submit"
+        class="m-2"
+        >Save</UButton
+      >
     </form>
   </div>
 </template>

@@ -3,6 +3,9 @@
 </template>
 
 <script setup>
+  definePageMeta({
+    middleware: ["auth"],
+  });
   import { collection, doc } from "firebase/firestore";
 
   const route = useRoute();

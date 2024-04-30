@@ -18,6 +18,9 @@
 </template>
 
 <script setup>
+  definePageMeta({
+    middleware: ["auth"],
+  });
   import { collection } from "firebase/firestore";
   const { firestore } = useFirebaseClient();
   const categories = useCollection(collection(firestore, "categories"), {

@@ -22,8 +22,8 @@ export default defineNuxtConfig({
     appCheck: {
       debug: process.env.NODE_ENV !== "production",
       isTokenAutoRefreshEnabled: true,
-      provider: "ReCaptchaV3",
-      key: "6LctAsopAAAAAGPUQLCRKoxSjlMko-zRy17c8ikL",
+      provider: "ReCaptchaEnterprise",
+      key: "6LcKHMopAAAAAHfazxKPus78WHpM4hZ1Q0GStd6G",
     },
   },
   nitro: {

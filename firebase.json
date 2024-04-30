@@ -4,6 +4,7 @@
     {
       "site": "activityapp-419511",
       "public": ".output/public",
+      "predeploy": "npm run build -- --preset=firebase",
       "cleanUrls": true,
       "rewrites": [{ "source": "**", "function": "server" }]
     }

@@ -112,7 +112,7 @@
     middleware: ["auth"],
   });
 
-  const isBerlin = ref(false);
+  const isBerlin = ref(true);
   const isRegional = ref(true);
   const name = ref("");
   const socialMediaLink = ref("");
@@ -219,8 +219,8 @@
       categories: categoryIds,
       createdAt: new Date(),
       updatedAt: new Date(),
-      createdBy: useCurrentUser().displayName,
-      updatedBy: useCurrentUser().displayName,
+      createdBy: useCurrentUser().value.displayName,
+      updatedBy: useCurrentUser().value.displayName,
     };
     try {
       const batch = writeBatch(firestore);

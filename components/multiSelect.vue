@@ -65,10 +65,7 @@
           new: false,
         };
       },
-    }),
-    {
-      once: true,
-    }
+    })
   );
 
   const showOptions = ref(false);

@@ -108,11 +108,12 @@
 
 <script setup>
   import { writeBatch, doc } from "firebase/firestore";
+  import { v4 as uuidv4 } from "uuid";
   definePageMeta({
     middleware: ["auth"],
   });
 
-  const isBerlin = ref(false);
+  const isBerlin = ref(true);
   const isRegional = ref(true);
   const name = ref("");
   const socialMediaLink = ref("");
@@ -206,6 +207,7 @@
     });
 
     const activity = {
+      id: uuidv4(),
       isBerlin: isBerlin.value,
       isRegional: isRegional.value,
       name: name.value,
@@ -219,15 +221,15 @@
       categories: categoryIds,
       createdAt: new Date(),
       updatedAt: new Date(),
-      createdBy: useCurrentUser().displayName,
-      updatedBy: useCurrentUser().displayName,
+      createdBy: useCurrentUser().value.displayName,
+      updatedBy: useCurrentUser().value.displayName,
     };
     try {
       const batch = writeBatch(firestore);
-      const activityRef = doc(firestore, "activities", activity.name);
+      const activityRef = doc(firestore, "activities", activity.id);
       batch.set(activityRef, activity);
       newCategories.forEach((category) => {
-        const categoryRef = doc(firestore, "categories", category.name);
+        const categoryRef = doc(firestore, "categories", category.id);
         batch.set(categoryRef, category);
       });
 

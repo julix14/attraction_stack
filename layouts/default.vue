@@ -22,5 +22,10 @@
       to: "/list-attractions",
       icon: "i-heroicons-list-bullet",
     },
+    {
+      label: "List Categories",
+      to: "/list-categories",
+      icon: "i-heroicons-list-bullet",
+    },
   ];
 </script>

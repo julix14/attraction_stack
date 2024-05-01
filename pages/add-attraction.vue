@@ -16,16 +16,22 @@
           <p>Address</p>
           <UInput
             size="sm"
-            v-model="address"
+            v-model="address.street"
             placeholder="Enter attraction address" />
+          <div class="flex min-w-full gap-x-2 mt-1">
+            <UInput
+              class="grow"
+              size="sm"
+              v-model="address.postalCode"
+              placeholder="Postal Code" />
+            <UInput
+              class="grow"
+              size="sm"
+              v-model="address.city"
+              placeholder="City" />
+          </div>
         </div>
-        <div>
-          <p>Social Media Link</p>
-          <UInput
-            size="sm"
-            v-model="socialMediaLink"
-            placeholder="Enter attraction address" />
-        </div>
+        <SocialMediaInput v-model="socialMediaLinks" />
         <div>
           <p>Website URL</p>
           <UInput
@@ -41,7 +47,7 @@
             placeholder="Enter attraction address" />
         </div>
         <div>
-          <p>Price per person</p>
+          <p>Price per person (From x €)</p>
           <UInput
             size="sm"
             v-model="price"
@@ -85,24 +91,26 @@
       </div>
       <UButton
         type="submit"
-        class="m-2"
-        >Save</UButton
-      >
+        class="m-2">
+        Save
+      </UButton>
     </form>
   </div>
+  <button @click="console.log(socialMediaLinks)">TEST</button>
 </template>
 
 <script setup>
   import { writeBatch, doc } from "firebase/firestore";
   import { v4 as uuidv4 } from "uuid";
   import InputField from "~/components/InputField.vue";
+  import SocialMediaInput from "../components/SocialMediaInput.vue";
   definePageMeta({
     middleware: ["auth"],
   });
 
   const isRegional = ref(true);
   const name = ref("");
-  const socialMediaLink = ref("");
+  const socialMediaLinks = ref([{ platform: "", link: "" }]);
   const websiteUrl = ref("");
   const googleMapsLink = ref("");
   const price = ref(0);
@@ -144,7 +152,12 @@
     },
   });
 
-  const address = ref("");
+  const address = ref({
+    street: "",
+    city: "",
+    postalCode: "",
+    country: "Germany",
+  });
 
   function fillOpeningHours() {
     console.log("Filling opening hours");
@@ -192,13 +205,13 @@
 
     const activity = {
       id: uuidv4(),
-      isRegional: isRegional.value,
-      name: name.value,
-      socialMediaLink: socialMediaLink.value,
-      websiteUrl: websiteUrl.value,
-      googleMapsLink: googleMapsLink.value,
-      price: price.value,
-      openingHours: openingHours.value,
+      isRegional: isRegional.value.trim(),
+      name: name.value.trim(),
+      socialMediaLinks: socialMediaLinks.value,
+      websiteUrl: websiteUrl.value.trim(),
+      googleMapsLink: googleMapsLink.value.trim(),
+      price: price.value.trim(),
+      openingHours: openingHours.value.trim(),
       address: address.value,
       categories: categoryIds,
       createdAt: new Date(),

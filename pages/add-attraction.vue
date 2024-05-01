@@ -264,7 +264,7 @@
   const duplicatesChecked = ref(false);
 
   // Return false if there are no duplicates, True if there are duplicates
-  async function checkForDuplicates(category) {
+  async function checkForDuplicates() {
     if (duplicatesChecked.value) {
       // Already checked for duplicates so indicate that there are no duplicates
       return false;

@@ -105,11 +105,7 @@
     <UModal
       v-model="showModal"
       class="">
-      <UCard
-        :ui="{
-          ring: '',
-          divide: 'divide-y divide-gray-100 dark:divide-gray-800',
-        }">
+      <UCard>
         <template #header>
           <p class="font-bold text-xl">Checking for duplicates</p>
         </template>
@@ -119,18 +115,14 @@
           <div v-else>
             <div
               v-if="duplicates.length > 0"
-              class="overflow-scroll">
+              class="gap-y-2">
               <NuxtLink
                 v-for="duplicate in duplicates"
                 :key="duplicate.id"
                 :to="`/attraction-${duplicate.id}`"
                 external
                 target="_blank">
-                <UCard
-                  :ui="{
-                    ring: '',
-                    divide: 'divide-y divide-gray-100 dark:divide-gray-800',
-                  }">
+                <UCard class="m-2">
                   <p>Name: {{ duplicate.name }}</p>
                   <p>Address:</p>
                   <pre>

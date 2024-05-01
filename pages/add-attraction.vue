@@ -5,20 +5,13 @@
     <form @submit.prevent="addAttraction">
       <div class="flex flex-col gap-y-2 mb-2">
         <div class="flex gap-x-2">
-          <p>Is it in Berlin?</p>
-          <UCheckbox v-model="isBerlin" />
-        </div>
-        <div class="flex gap-x-2">
           <p>Is it regionally?</p>
           <UCheckbox v-model="isRegional" />
         </div>
-        <div>
-          <p>Name</p>
-          <UInput
-            size="sm"
-            v-model="name"
-            placeholder="Enter attraction name" />
-        </div>
+        <InputField
+          title="Name"
+          placeholder="Enter attraction name"
+          v-model="name" />
         <div>
           <p>Opening Hours</p>
           <UInput
@@ -109,11 +102,11 @@
 <script setup>
   import { writeBatch, doc } from "firebase/firestore";
   import { v4 as uuidv4 } from "uuid";
+  import InputField from "~/components/InputField.vue";
   definePageMeta({
     middleware: ["auth"],
   });
 
-  const isBerlin = ref(true);
   const isRegional = ref(true);
   const name = ref("");
   const socialMediaLink = ref("");
@@ -208,7 +201,6 @@
 
     const activity = {
       id: uuidv4(),
-      isBerlin: isBerlin.value,
       isRegional: isRegional.value,
       name: name.value,
       socialMediaLink: socialMediaLink.value,

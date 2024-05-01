@@ -7,6 +7,8 @@
         <div class="flex gap-x-2">
           <p>Is it regionally?</p>
           <UCheckbox v-model="isRegional" />
+          <p>Is for single only?</p>
+          <UCheckbox v-model="isSingleOnly" />
         </div>
         <InputField
           title="Name"
@@ -50,8 +52,13 @@
           <p>Price per person (From x €)</p>
           <UInput
             size="sm"
-            v-model="price"
+            type="number"
+            v-model="price.from"
             placeholder="Enter attraction address" />
+        </div>
+        <div class="flex gap-x-2 items-center">
+          <p>Student discount available?</p>
+          <UCheckbox v-model="price.studentDiscount" />
         </div>
         <MultiSelect
           @category-selected="addCategory"
@@ -108,12 +115,16 @@
     middleware: ["auth"],
   });
 
+  const isSingleOnly = ref(false);
   const isRegional = ref(true);
   const name = ref("");
   const socialMediaLinks = ref([{ platform: "", link: "" }]);
   const websiteUrl = ref("");
   const googleMapsLink = ref("");
-  const price = ref(0);
+  const price = ref({
+    from: 0,
+    studentDiscount: false,
+  });
   const openingHours = ref({
     monday: {
       openAt: "",
@@ -205,13 +216,14 @@
 
     const activity = {
       id: uuidv4(),
-      isRegional: isRegional.value.trim(),
+      isSingleOnly: isSingleOnly.value,
+      isRegional: isRegional.value,
       name: name.value.trim(),
       socialMediaLinks: socialMediaLinks.value,
       websiteUrl: websiteUrl.value.trim(),
       googleMapsLink: googleMapsLink.value.trim(),
-      price: price.value.trim(),
-      openingHours: openingHours.value.trim(),
+      price: price.value,
+      openingHours: openingHours.value,
       address: address.value,
       categories: categoryIds,
       createdAt: new Date(),

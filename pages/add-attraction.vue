@@ -102,12 +102,70 @@
         Save
       </UButton>
     </form>
+    <UModal
+      v-model="showModal"
+      class="">
+      <UCard
+        :ui="{
+          ring: '',
+          divide: 'divide-y divide-gray-100 dark:divide-gray-800',
+        }">
+        <template #header>
+          <p class="font-bold text-xl">Checking for duplicates</p>
+        </template>
+        <div>
+          <LoadingAnimation
+            v-if="duplicates.length === 0 && duplicatesChecked === false" />
+          <div v-else>
+            <div
+              v-if="duplicates.length > 0"
+              class="overflow-scroll">
+              <NuxtLink
+                v-for="duplicate in duplicates"
+                :key="duplicate.id"
+                :to="`/attraction-${duplicate.id}`"
+                external
+                target="_blank">
+                <UCard
+                  :ui="{
+                    ring: '',
+                    divide: 'divide-y divide-gray-100 dark:divide-gray-800',
+                  }">
+                  <p>Name: {{ duplicate.name }}</p>
+                  <p>Address:</p>
+                  <pre>
+                    {{ JSON.stringify(duplicate.address, null, 4) }}
+                  </pre>
+                  <p>Website: {{ duplicate.websiteUrl }}</p>
+                </UCard>
+              </NuxtLink>
+            </div>
+            <p v-else>There are no duplicates</p>
+          </div>
+        </div>
+        <template #footer>
+          <div class="flex gap-x-2 justify-between">
+            <UButton @click="closeDuplicateModel">
+              Duplicates Checked - Save Activity
+            </UButton>
+            <UButton @click="showModal = false">Cancel</UButton>
+          </div>
+        </template>
+      </UCard>
+    </UModal>
   </div>
-  <button @click="console.log(socialMediaLinks)">TEST</button>
 </template>
 
 <script setup>
-  import { writeBatch, doc } from "firebase/firestore";
+  import {
+    writeBatch,
+    doc,
+    query,
+    where,
+    getDocs,
+    collection,
+    or,
+  } from "firebase/firestore";
   import { v4 as uuidv4 } from "uuid";
   import InputField from "~/components/InputField.vue";
   import SocialMediaInput from "../components/SocialMediaInput.vue";
@@ -115,6 +173,7 @@
     middleware: ["auth"],
   });
 
+  // General Values
   const isSingleOnly = ref(false);
   const isRegional = ref(true);
   const name = ref("");
@@ -125,6 +184,15 @@
     from: 0,
     studentDiscount: false,
   });
+
+  const address = ref({
+    street: "",
+    city: "",
+    postalCode: "",
+    country: "Germany",
+  });
+
+  // Opening Hours
   const openingHours = ref({
     monday: {
       openAt: "",
@@ -163,16 +231,8 @@
     },
   });
 
-  const address = ref({
-    street: "",
-    city: "",
-    postalCode: "",
-    country: "Germany",
-  });
-
   function fillOpeningHours() {
     console.log("Filling opening hours");
-    // maybe need later: const defaultHours = { openAt: "", closeAt: "", open: true };
 
     const days = [
       "tuesday",
@@ -190,6 +250,7 @@
     });
   }
 
+  // Categories
   const categories = ref([]);
 
   function addCategory(category) {
@@ -201,8 +262,63 @@
       (existingCategory) => existingCategory.id !== category.id
     );
   }
+
+  // Modal
+  const showModal = ref(false);
+  const duplicates = ref([]);
+
+  const { firestore } = useFirebaseClient();
+
+  const duplicatesChecked = ref(false);
+
+  // Return false if there are no duplicates, True if there are duplicates
+  async function checkForDuplicates(category) {
+    if (duplicatesChecked.value) {
+      // Already checked for duplicates so indicate that there are no duplicates
+      return false;
+    }
+
+    const activityRef = collection(firestore, "activities");
+
+    const q = query(
+      activityRef,
+      or(
+        where("name", "==", name.value),
+        where("address", "==", address.value),
+        where("googleMapsLink", "==", googleMapsLink.value),
+        where("websiteUrl", "==", websiteUrl.value)
+      )
+    );
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.size > 0) {
+      querySnapshot.forEach((doc) => {
+        duplicates.value.push(doc.data());
+      });
+      // There are duplicates
+      return true;
+    }
+    // No duplicates
+    return false;
+  }
+
+  function closeDuplicateModel() {
+    duplicatesChecked.value = true;
+    showModal.value = false;
+  }
+
+  // Firestore storing
   async function addAttraction() {
-    const { firestore } = useFirebaseClient();
+    console.log("Checking for duplicates");
+
+    // Block the user from saving the attraction if there are duplicates
+    showModal.value = true;
+
+    const duplicatesFound = await checkForDuplicates();
+    if (duplicatesFound) {
+      console.log("Duplicates found");
+      return;
+    }
+
     console.log("Saving attraction");
     const categoryIds = categories.value.map((category) => category.id);
 

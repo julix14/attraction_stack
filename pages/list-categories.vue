@@ -37,8 +37,7 @@
   }
 
   const tableLoad = computed(() => {
-    // Don't know why this operation works in that way, but it does
-    return categories.value < true;
+    return !categories.value.length > 0;
   });
 
   const page = ref(1);

@@ -22,6 +22,7 @@
   });
   import { collection } from "firebase/firestore";
   const { firestore } = useFirebaseClient();
+
   const attractions = useCollection(
     collection(firestore, "activities").withConverter({
       fromFirestore(snapshot, options) {
@@ -46,8 +47,7 @@
   };
 
   const tableLoad = computed(() => {
-    // Don't know why this operation works in that way, but it does
-    return attractions.value < true;
+    return !attractions.value.length > 0;
   });
 
   const page = ref(1);

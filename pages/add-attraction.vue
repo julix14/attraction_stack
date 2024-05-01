@@ -13,13 +13,6 @@
           placeholder="Enter attraction name"
           v-model="name" />
         <div>
-          <p>Opening Hours</p>
-          <UInput
-            size="sm"
-            v-model="openingHoursOnWebsite"
-            placeholder="Enter opening hours text" />
-        </div>
-        <div>
           <p>Address</p>
           <UInput
             size="sm"
@@ -151,8 +144,6 @@
     },
   });
 
-  const openingHoursOnWebsite = ref("");
-
   const address = ref("");
 
   function fillOpeningHours() {
@@ -208,7 +199,6 @@
       googleMapsLink: googleMapsLink.value,
       price: price.value,
       openingHours: openingHours.value,
-      openingHoursOnWebsite: openingHoursOnWebsite.value,
       address: address.value,
       categories: categoryIds,
       createdAt: new Date(),

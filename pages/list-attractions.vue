@@ -2,7 +2,7 @@
   <div>
     <UTable
       :rows="rows"
-      sortable
+      :columns="columns"
       :loading="tableLoad"
       @select="openDetails"
       class="m-2" />
@@ -30,10 +30,9 @@
         return {
           id: snapshot.id,
           name: data.name,
-          socialMediaLink: data.socialMediaLink,
           websiteUrl: data.websiteUrl,
-          price: data.price,
-          address: data.address,
+          price: formatPrice(data.price),
+          address: formatAddress(data.address),
           isBerlin: data.isBerlin,
           isRegional: data.isRegional,
         };
@@ -45,6 +44,24 @@
   const openDetails = (row) => {
     navigateTo(`/add-attraction?id=${row.id}`);
   };
+
+  function formatAddress(address) {
+    return `${address.street}, ${address.postalCode} ${address.city}`;
+  }
+
+  function formatPrice(price) {
+    const priceLabel = price.studentDiscount
+      ? "Free (Student Discount)"
+      : "Free";
+    if (price.from === 0 || !price.from) return priceLabel;
+
+    return (
+      "From " +
+      price.from +
+      " €" +
+      (price.studentDiscount ? " (Student Discount)" : "")
+    );
+  }
 
   const tableLoad = computed(() => {
     return !attractions.value.length > 0;
@@ -59,4 +76,42 @@
       page.value * pageCount
     );
   });
+
+  const columns = [
+    {
+      key: "id",
+      label: "ID",
+      sortable: true,
+    },
+    {
+      key: "name",
+      label: "Name",
+      sortable: true,
+    },
+    {
+      key: "websiteUrl",
+      label: "Website",
+      sortable: true,
+    },
+    {
+      key: "price",
+      label: "Price",
+      sortable: true,
+    },
+    {
+      key: "address",
+      label: "Address",
+      sortable: true,
+    },
+    {
+      key: "isBerlin",
+      label: "Berlin",
+      sortable: true,
+    },
+    {
+      key: "isRegional",
+      label: "Regional",
+      sortable: true,
+    },
+  ];
 </script>

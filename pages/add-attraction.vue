@@ -298,15 +298,35 @@
     const attraction = querySnapshot.docs[0].data();
     // Set values
     id = idToEdit;
-    isSingleOnly.value = attraction.isSingleOnly;
-    isRegional.value = attraction.isRegional;
-    name.value = attraction.name;
-    socialMediaLinks.value = attraction.socialMediaLinks;
-    websiteUrl.value = attraction.websiteUrl;
-    googleMapsLink.value = attraction.googleMapsLink;
-    price.value = attraction.price;
-    address.value = attraction.address;
-    openingHours.value = attraction.openingHours;
-    categories.value = attraction.categories;
+    if (attraction.isSingleOnly !== undefined) {
+      isSingleOnly.value = attraction.isSingleOnly;
+    }
+    if (attraction.isRegional !== undefined) {
+      isRegional.value = attraction.isRegional;
+    }
+    if (attraction.name !== undefined) {
+      name.value = attraction.name;
+    }
+    if (attraction.socialMediaLinks !== undefined) {
+      socialMediaLinks.value = attraction.socialMediaLinks;
+    }
+    if (attraction.websiteUrl !== undefined) {
+      websiteUrl.value = attraction.websiteUrl;
+    }
+    if (attraction.googleMapsLink !== undefined) {
+      googleMapsLink.value = attraction.googleMapsLink;
+    }
+    if (attraction.price !== undefined) {
+      price.value = attraction.price;
+    }
+    if (attraction.address !== undefined) {
+      address.value = attraction.address;
+    }
+    if (attraction.openingHours !== undefined) {
+      openingHours.value = attraction.openingHours;
+    }
+    if (attraction.categories !== undefined) {
+      categories.value = attraction.categories;
+    }
   }
 </script>

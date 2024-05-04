@@ -1,6 +1,15 @@
 <template>
   <div class="m-2">
-    <p class="font-bold text-xl">Add Attraction</p>
+    <p
+      class="font-bold text-xl"
+      v-if="id == undefined">
+      Add Attraction
+    </p>
+    <p
+      class="font-bold text-xl"
+      v-else>
+      Edit Attraction
+    </p>
     <form @submit.prevent="addAttraction">
       <div class="flex flex-col gap-y-2 mb-2">
         <div class="flex gap-x-2">
@@ -79,7 +88,6 @@
       </UCard>
     </UModal>
   </div>
-  <button @click="console.log(price)">Add Attraction</button>
 </template>
 
 <script setup>
@@ -98,11 +106,16 @@
   import AddressInput from "../components/AddressInput.vue";
   import OpeningHoursInput from "../components/OpeningHoursInput.vue";
   import PriceInput from "../components/PriceInput.vue";
+
+  const { firestore } = useFirebaseClient();
+
   definePageMeta({
     middleware: ["auth"],
   });
 
   // General Values
+  let id;
+
   const isSingleOnly = ref(false);
   const isRegional = ref(true);
   const name = ref("");
@@ -177,13 +190,11 @@
   const showModal = ref(false);
   const duplicates = ref([]);
 
-  const { firestore } = useFirebaseClient();
-
   const duplicatesChecked = ref(false);
 
   // Return false if there are no duplicates, True if there are duplicates
   async function checkForDuplicates() {
-    if (duplicatesChecked.value) {
+    if (duplicatesChecked.value || id !== undefined) {
       // Already checked for duplicates so indicate that there are no duplicates
       return false;
     }
@@ -241,7 +252,7 @@
     });
 
     const activity = {
-      id: uuidv4(),
+      id: id || uuidv4(),
       isSingleOnly: isSingleOnly.value,
       isRegional: isRegional.value,
       name: name.value.trim(),
@@ -274,5 +285,28 @@
     } catch (error) {
       console.error("Error adding attraction:", error);
     }
+  }
+
+  // Editing
+  const route = useRoute();
+  const idToEdit = route.query.id;
+
+  if (idToEdit) {
+    const activityRef = collection(firestore, "activities");
+    const q = query(activityRef, where("id", "==", idToEdit));
+    const querySnapshot = await getDocs(q);
+    const attraction = querySnapshot.docs[0].data();
+    // Set values
+    id = idToEdit;
+    isSingleOnly.value = attraction.isSingleOnly;
+    isRegional.value = attraction.isRegional;
+    name.value = attraction.name;
+    socialMediaLinks.value = attraction.socialMediaLinks;
+    websiteUrl.value = attraction.websiteUrl;
+    googleMapsLink.value = attraction.googleMapsLink;
+    price.value = attraction.price;
+    address.value = attraction.address;
+    openingHours.value = attraction.openingHours;
+    categories.value = attraction.categories;
   }
 </script>

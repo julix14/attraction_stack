@@ -43,7 +43,7 @@
   );
 
   const openDetails = (row) => {
-    navigateTo(`/attraction-${row.id}`);
+    navigateTo(`/add-attraction?id=${row.id}`);
   };
 
   const tableLoad = computed(() => {

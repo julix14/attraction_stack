@@ -71,7 +71,9 @@
         :to="`/attraction-${duplicate.id}`"
         external
         target="_blank">
-        <UCard class="my-2">
+        <UCard
+          class="my-2"
+          :class="conditionalDuplicateFormatting(duplicate.score)">
           <p>Name: {{ duplicate.name }}</p>
           <p>Address:</p>
           <p>{{ duplicate.address.joined }}</p>
@@ -246,11 +248,11 @@
   const possibleDuplicates = ref([]);
 
   const fuseOptions = {
+    includeScore: true,
     keys: ["name", "websiteUrl", "address.joined"],
   };
+  const fuse = new Fuse(collectionRef.value, fuseOptions);
   function checkForDuplicates(fieldName) {
-    console.log("Checking for duplicates", collectionRef.value);
-    const fuse = new Fuse(collectionRef.value, fuseOptions);
     let results = [];
     switch (fieldName) {
       case "name":
@@ -264,11 +266,22 @@
         break;
     }
 
+    possibleDuplicates.value = [];
     results.forEach((result) => {
-      possibleDuplicates.value.push(result.item);
+      const item = result.item;
+      item.score = result.score;
+      possibleDuplicates.value.push(item);
     });
+  }
 
-    console.log("Possible duplicates", possibleDuplicates.value);
+  function conditionalDuplicateFormatting(score) {
+    if (score < 0.3) {
+      return "bg-red-200";
+    } else if (score < 0.5) {
+      return "bg-yellow-200";
+    } else {
+      return "bg-green-200";
+    }
   }
 
   // Firestore storing

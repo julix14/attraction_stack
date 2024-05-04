@@ -1,7 +1,6 @@
 <template>
   <div class="m-2">
     <p class="font-bold text-xl">Add Attraction</p>
-
     <form @submit.prevent="addAttraction">
       <div class="flex flex-col gap-y-2 mb-2">
         <div class="flex gap-x-2">
@@ -24,23 +23,13 @@
           title="Google Maps Link"
           placeholder="Enter google Maps Link"
           v-model="googleMapsLink" />
-        <div>
-          <p>Price per person (From x €)</p>
-          <UInput
-            size="sm"
-            type="number"
-            v-model="price.from"
-            placeholder="Enter attraction address" />
-        </div>
-        <div class="flex gap-x-2 items-center">
-          <p>Student discount available?</p>
-          <UCheckbox v-model="price.studentDiscount" />
-        </div>
+        <PriceInput
+          v-model="price"
+          withDiscount />
         <MultiSelect
           @category-selected="addCategory"
           @category-removed="removeCategory" />
       </div>
-
       <OpeningHoursInput v-model="openingHours" />
       <UButton
         type="submit"
@@ -90,7 +79,7 @@
       </UCard>
     </UModal>
   </div>
-  <button @click="console.log(openingHours)">Add Attraction</button>
+  <button @click="console.log(price)">Add Attraction</button>
 </template>
 
 <script setup>
@@ -108,6 +97,7 @@
   import SocialMediaInput from "../components/SocialMediaInput.vue";
   import AddressInput from "../components/AddressInput.vue";
   import OpeningHoursInput from "../components/OpeningHoursInput.vue";
+  import PriceInput from "../components/PriceInput.vue";
   definePageMeta({
     middleware: ["auth"],
   });

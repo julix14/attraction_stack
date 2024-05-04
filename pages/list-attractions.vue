@@ -4,8 +4,16 @@
       :rows="rows"
       :columns="columns"
       :loading="tableLoad"
-      @select="openDetails"
-      class="m-2" />
+      class="m-2">
+      <template #actions-data="{ row }">
+        <UDropdown :items="items(row)">
+          <UButton
+            color="gray"
+            variant="ghost"
+            icon="i-heroicons-ellipsis-horizontal-20-solid" />
+        </UDropdown>
+      </template>
+    </UTable>
     <div
       class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
       <UPagination
@@ -20,7 +28,8 @@
   definePageMeta({
     middleware: ["auth"],
   });
-  import { collection } from "firebase/firestore";
+  import { collection, doc, deleteDoc } from "firebase/firestore";
+
   const { firestore } = useFirebaseClient();
 
   const attractions = useCollection(
@@ -37,13 +46,8 @@
           isRegional: data.isRegional,
         };
       },
-    }),
-    { once: true }
+    })
   );
-
-  const openDetails = (row) => {
-    navigateTo(`/add-attraction?id=${row.id}`);
-  };
 
   function formatAddress(address) {
     return `${address.street}, ${address.postalCode} ${address.city}`;
@@ -81,7 +85,6 @@
     {
       key: "id",
       label: "ID",
-      sortable: true,
     },
     {
       key: "name",
@@ -113,5 +116,39 @@
       label: "Regional",
       sortable: true,
     },
+    {
+      key: "actions",
+    },
   ];
+
+  const items = (row) => [
+    [
+      {
+        label: "View JSON",
+        icon: "i-heroicons-code-bracket",
+        click: () => navigateTo(`/attraction-${row.id}`),
+      },
+      {
+        label: "Edit",
+        icon: "i-heroicons-pencil-square",
+        click: () => navigateTo(`/add-attraction?id=${row.id}`),
+      },
+    ],
+    [
+      {
+        label: "Delete",
+        icon: "i-heroicons-trash-20-solid",
+        click: () => {
+          if (confirm("Are you sure you want to delete this attraction?")) {
+            deleteItem(row.id);
+          }
+        },
+      },
+    ],
+  ];
+
+  const deleteItem = async (id) => {
+    await deleteDoc(doc(firestore, "activities", id));
+    navigateTo("/list-attractions");
+  };
 </script>

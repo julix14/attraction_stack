@@ -1,16 +1,18 @@
 <template>
-  <div class="m-2">
+  <div class="m-2 grid grid-cols-4">
     <p
-      class="font-bold text-xl"
+      class="font-bold text-xl col-span-3 col-start-1"
       v-if="id == undefined">
       Add Attraction
     </p>
     <p
-      class="font-bold text-xl"
+      class="font-bold text-xl col-span-3 col-start-1"
       v-else>
       Edit Attraction
     </p>
-    <form @submit.prevent="addAttraction">
+    <form
+      @submit.prevent="addAttraction"
+      class="col-span-3 col-start-1">
       <div class="flex flex-col gap-y-2 mb-2">
         <div class="flex gap-x-2 items-center">
           <p>Is it regionally?</p>
@@ -27,13 +29,21 @@
         <InputField
           title="Name"
           placeholder="Enter attraction name"
-          v-model="name" />
-        <AddressInput v-model="address" />
+          v-model="name"
+          @blur="checkForDuplicates('name')" />
+        <InputField
+          title="Found at"
+          placeholder="Enter where you found it"
+          v-model="foundAt" />
+        <AddressInput
+          v-model="address"
+          @blur="checkForDuplicates('address')" />
         <SocialMediaInput v-model="socialMediaLinks" />
         <InputField
           title="Website URL"
           placeholder="Enter attraction URL"
-          v-model="websiteUrl" />
+          v-model="websiteUrl"
+          @blur="checkForDuplicates('websiteUrl')" />
         <InputField
           title="Google Maps Link"
           placeholder="Enter google Maps Link"
@@ -52,47 +62,24 @@
         Save
       </UButton>
     </form>
-    <UModal v-model="showModal">
-      <UCard>
-        <template #header>
-          <p class="font-bold text-xl">Checking for duplicates</p>
-        </template>
-        <div>
-          <LoadingAnimation
-            v-if="duplicates.length === 0 && duplicatesChecked === false" />
-          <div v-else>
-            <div
-              v-if="duplicates.length > 0"
-              class="gap-y-2">
-              <NuxtLink
-                v-for="duplicate in duplicates"
-                :key="duplicate.id"
-                :to="`/attraction-${duplicate.id}`"
-                external
-                target="_blank">
-                <UCard class="m-2">
-                  <p>Name: {{ duplicate.name }}</p>
-                  <p>Address:</p>
-                  <pre>
-                    {{ JSON.stringify(duplicate.address, null, 4) }}
-                  </pre>
-                  <p>Website: {{ duplicate.websiteUrl }}</p>
-                </UCard>
-              </NuxtLink>
-            </div>
-            <p v-else>There are no duplicates</p>
-          </div>
-        </div>
-        <template #footer>
-          <div class="flex gap-x-2 justify-between">
-            <UButton @click="closeDuplicateModel">
-              Duplicates Checked - Save Activity
-            </UButton>
-            <UButton @click="showModal = false">Cancel</UButton>
-          </div>
-        </template>
-      </UCard>
-    </UModal>
+    <UCard class="col-span-1 col-start-4 m-2">
+      <p class="font-bold">Possible duplicates:</p>
+
+      <NuxtLink
+        v-for="duplicate in possibleDuplicates"
+        :key="duplicate.id"
+        :to="`/attraction-${duplicate.id}`"
+        external
+        target="_blank">
+        <UCard class="my-2">
+          <p>Name: {{ duplicate.name }}</p>
+          <p>Address:</p>
+          <p>{{ duplicate.address.joined }}</p>
+          <p>Website: {{ duplicate.websiteUrl }}</p>
+        </UCard>
+      </NuxtLink>
+      <p v-if="possibleDuplicates.length === 0">No duplicates found</p></UCard
+    >
   </div>
 </template>
 
@@ -104,7 +91,6 @@
     where,
     getDocs,
     collection,
-    or,
   } from "firebase/firestore";
   import { v4 as uuidv4 } from "uuid";
   import InputField from "~/components/InputField.vue";
@@ -112,6 +98,7 @@
   import AddressInput from "../components/AddressInput.vue";
   import OpeningHoursInput from "../components/OpeningHoursInput.vue";
   import PriceInput from "../components/PriceInput.vue";
+  import Fuse from "fuse.js";
 
   const { firestore } = useFirebaseClient();
 
@@ -123,6 +110,7 @@
     isRegional.value = true;
     isSingleOnly.value = false;
     name.value = "";
+    foundAt.value = "";
     socialMediaLinks.value = [{ platform: "", link: "" }];
     websiteUrl.value = "";
     googleMapsLink.value = "";
@@ -182,6 +170,7 @@
 
   const isSingleOnly = ref(false);
   const isRegional = ref(true);
+  const foundAt = ref("");
   const name = ref("");
   const socialMediaLinks = ref([{ platform: "", link: "" }]);
   const websiteUrl = ref("");
@@ -196,6 +185,9 @@
     city: "",
     postalCode: "",
     country: "Germany",
+    joined: computed(() => {
+      return `${address.value.street}, ${address.value.postalCode} ${address.value.city}, ${address.value.country}`;
+    }),
   });
 
   // Opening Hours
@@ -250,60 +242,37 @@
     );
   }
 
-  // Modal
-  const showModal = ref(false);
-  const duplicates = ref([]);
+  const collectionRef = useCollection(collection(firestore, "activities"));
+  const possibleDuplicates = ref([]);
 
-  const duplicatesChecked = ref(false);
-
-  // Return false if there are no duplicates, True if there are duplicates
-  async function checkForDuplicates() {
-    if (duplicatesChecked.value || id !== undefined) {
-      // Already checked for duplicates so indicate that there are no duplicates
-      return false;
+  const fuseOptions = {
+    keys: ["name", "websiteUrl", "address.joined"],
+  };
+  function checkForDuplicates(fieldName) {
+    console.log("Checking for duplicates", collectionRef.value);
+    const fuse = new Fuse(collectionRef.value, fuseOptions);
+    let results = [];
+    switch (fieldName) {
+      case "name":
+        results = fuse.search(name.value);
+        break;
+      case "websiteUrl":
+        results = fuse.search(websiteUrl.value);
+        break;
+      case "address":
+        results = fuse.search(address.value.joined);
+        break;
     }
 
-    const activityRef = collection(firestore, "activities");
+    results.forEach((result) => {
+      possibleDuplicates.value.push(result.item);
+    });
 
-    const q = query(
-      activityRef,
-      or(
-        where("name", "==", name.value),
-        where("address", "==", address.value),
-        where("googleMapsLink", "==", googleMapsLink.value),
-        where("websiteUrl", "==", websiteUrl.value)
-      )
-    );
-    const querySnapshot = await getDocs(q);
-    if (querySnapshot.size > 0) {
-      querySnapshot.forEach((doc) => {
-        duplicates.value.push(doc.data());
-      });
-      // There are duplicates
-      return true;
-    }
-    // No duplicates
-    return false;
-  }
-
-  function closeDuplicateModel() {
-    duplicatesChecked.value = true;
-    showModal.value = false;
+    console.log("Possible duplicates", possibleDuplicates.value);
   }
 
   // Firestore storing
   async function addAttraction() {
-    console.log("Checking for duplicates");
-
-    // Block the user from saving the attraction if there are duplicates
-    showModal.value = true;
-
-    const duplicatesFound = await checkForDuplicates();
-    if (duplicatesFound) {
-      console.log("Duplicates found");
-      return;
-    }
-
     console.log("Saving attraction");
     const categoryIds = categories.value.map((category) => category.id);
 
@@ -320,6 +289,7 @@
       isSingleOnly: isSingleOnly.value,
       isRegional: isRegional.value,
       name: name.value.trim(),
+      foundAt: foundAt.value.trim(),
       socialMediaLinks: socialMediaLinks.value,
       websiteUrl: websiteUrl.value.trim(),
       googleMapsLink: googleMapsLink.value.trim(),
@@ -367,6 +337,9 @@
     }
     if (attraction.isRegional !== undefined) {
       isRegional.value = attraction.isRegional;
+    }
+    if (attraction.foundAt !== undefined) {
+      foundAt.value = attraction.foundAt;
     }
     if (attraction.name !== undefined) {
       name.value = attraction.name;

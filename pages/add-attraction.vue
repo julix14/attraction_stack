@@ -14,40 +14,16 @@
           title="Name"
           placeholder="Enter attraction name"
           v-model="name" />
-        <div>
-          <p>Address</p>
-          <UInput
-            size="sm"
-            v-model="address.street"
-            placeholder="Enter attraction address" />
-          <div class="flex min-w-full gap-x-2 mt-1">
-            <UInput
-              class="grow"
-              size="sm"
-              v-model="address.postalCode"
-              placeholder="Postal Code" />
-            <UInput
-              class="grow"
-              size="sm"
-              v-model="address.city"
-              placeholder="City" />
-          </div>
-        </div>
+        <AddressInput v-model="address" />
         <SocialMediaInput v-model="socialMediaLinks" />
-        <div>
-          <p>Website URL</p>
-          <UInput
-            size="sm"
-            v-model="websiteUrl"
-            placeholder="Enter attraction address" />
-        </div>
-        <div>
-          <p>Google Maps Link</p>
-          <UInput
-            size="sm"
-            v-model="googleMapsLink"
-            placeholder="Enter attraction address" />
-        </div>
+        <InputField
+          title="Website URL"
+          placeholder="Enter attraction URL"
+          v-model="websiteUrl" />
+        <InputField
+          title="Google Maps Link"
+          placeholder="Enter google Maps Link"
+          v-model="googleMapsLink" />
         <div>
           <p>Price per person (From x €)</p>
           <UInput
@@ -65,46 +41,14 @@
           @category-removed="removeCategory" />
       </div>
 
-      <div class="flex flex-col">
-        <p class="font-bold text-xl">Opening Hours</p>
-        <div class="flex flex-col gap-y-2 overflow-hidden">
-          <div class="flex flex-row gap-x-2">
-            <TimeInput
-              day="Monday"
-              :opening-hours="openingHours.monday" />
-            <UButton @click="fillOpeningHours">
-              Copy opening hours for all days</UButton
-            >
-          </div>
-          <TimeInput
-            day="Tuesday"
-            :opening-hours="openingHours.tuesday" />
-          <TimeInput
-            day="Wednesday"
-            :opening-hours="openingHours.wednesday" />
-          <TimeInput
-            day="Thursday"
-            :opening-hours="openingHours.thursday" />
-          <TimeInput
-            day="Friday"
-            :opening-hours="openingHours.friday" />
-          <TimeInput
-            day="Saturday"
-            :opening-hours="openingHours.saturday" />
-          <TimeInput
-            day="Sunday"
-            :opening-hours="openingHours.sunday" />
-        </div>
-      </div>
+      <OpeningHoursInput v-model="openingHours" />
       <UButton
         type="submit"
         class="m-2">
         Save
       </UButton>
     </form>
-    <UModal
-      v-model="showModal"
-      class="">
+    <UModal v-model="showModal">
       <UCard>
         <template #header>
           <p class="font-bold text-xl">Checking for duplicates</p>
@@ -146,6 +90,7 @@
       </UCard>
     </UModal>
   </div>
+  <button @click="console.log(openingHours)">Add Attraction</button>
 </template>
 
 <script setup>
@@ -161,6 +106,8 @@
   import { v4 as uuidv4 } from "uuid";
   import InputField from "~/components/InputField.vue";
   import SocialMediaInput from "../components/SocialMediaInput.vue";
+  import AddressInput from "../components/AddressInput.vue";
+  import OpeningHoursInput from "../components/OpeningHoursInput.vue";
   definePageMeta({
     middleware: ["auth"],
   });
@@ -222,25 +169,6 @@
       open: true,
     },
   });
-
-  function fillOpeningHours() {
-    console.log("Filling opening hours");
-
-    const days = [
-      "tuesday",
-      "wednesday",
-      "thursday",
-      "friday",
-      "saturday",
-      "sunday",
-    ];
-
-    days.forEach((day) => {
-      openingHours.value[day] = JSON.parse(
-        JSON.stringify(openingHours.value["monday"])
-      );
-    });
-  }
 
   // Categories
   const categories = ref([]);

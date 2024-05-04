@@ -12,11 +12,17 @@
     </p>
     <form @submit.prevent="addAttraction">
       <div class="flex flex-col gap-y-2 mb-2">
-        <div class="flex gap-x-2">
+        <div class="flex gap-x-2 items-center">
           <p>Is it regionally?</p>
           <UCheckbox v-model="isRegional" />
           <p>Is for single only?</p>
           <UCheckbox v-model="isSingleOnly" />
+          <UButton
+            v-if="id !== undefined"
+            @click="resetForm"
+            class="m-2 ml-auto">
+            Back to add Form
+          </UButton>
         </div>
         <InputField
           title="Name"
@@ -113,6 +119,64 @@
     middleware: ["auth"],
   });
 
+  function resetForm() {
+    isRegional.value = true;
+    isSingleOnly.value = false;
+    name.value = "";
+    socialMediaLinks.value = [{ platform: "", link: "" }];
+    websiteUrl.value = "";
+    googleMapsLink.value = "";
+    price.value = {
+      from: 0,
+      studentDiscount: false,
+    };
+    address.value = {
+      street: "",
+      city: "",
+      postalCode: "",
+      country: "Germany",
+    };
+    openingHours.value = {
+      monday: {
+        openAt: "",
+        closeAt: "",
+        open: true,
+      },
+      tuesday: {
+        openAt: "",
+        closeAt: "",
+        open: true,
+      },
+      wednesday: {
+        openAt: "",
+        closeAt: "",
+        open: true,
+      },
+      thursday: {
+        openAt: "",
+        closeAt: "",
+        open: true,
+      },
+      friday: {
+        openAt: "",
+        closeAt: "",
+        open: true,
+      },
+      saturday: {
+        openAt: "",
+        closeAt: "",
+        open: true,
+      },
+      sunday: {
+        openAt: "",
+        closeAt: "",
+        open: true,
+      },
+    };
+    categories.value = [];
+    id = undefined;
+    navigateTo("/add-attraction");
+  }
   // General Values
   let id;
 

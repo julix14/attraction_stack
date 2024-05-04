@@ -4,7 +4,7 @@
     <div
       class="flex gap-x-2 shadow-sm ring-1 ring-inset ring-gray-300 rounded-md border-0 bg-white px-2.5 py-1.5 focus:ring-2 focus:ring-primary-500 dark:bg-gray-900 dark:text-white dark:focus:ring-primary-400 dark:ring-gray-700 dark:placeholder-gray-500">
       <div
-        class="flex items-center gap-x-2 bg-gray-200 rounded-md"
+        class="flex items-center gap-x-2 bg-gray-200 rounded-md p-1"
         v-for="category in selectedCategories">
         <p>{{ category.name }}</p>
         <UIcon

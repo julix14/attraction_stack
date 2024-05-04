@@ -12,6 +12,7 @@
     </p>
     <form
       @submit.prevent="addAttraction"
+      @keydown.enter.prevent
       class="col-span-3 col-start-1">
       <div class="flex flex-col gap-y-2 mb-2">
         <div class="flex gap-x-2 items-center">
@@ -30,20 +31,20 @@
           title="Name"
           placeholder="Enter attraction name"
           v-model="name"
-          @blur="checkForDuplicates('name')" />
+          @blur="checkForDuplicates" />
         <InputField
           title="Found at"
           placeholder="Enter where you found it"
           v-model="foundAt" />
         <AddressInput
           v-model="address"
-          @blur="checkForDuplicates('address')" />
+          @blur="checkForDuplicates" />
         <SocialMediaInput v-model="socialMediaLinks" />
         <InputField
           title="Website URL"
           placeholder="Enter attraction URL"
           v-model="websiteUrl"
-          @blur="checkForDuplicates('websiteUrl')" />
+          @blur="checkForDuplicates" />
         <InputField
           title="Google Maps Link"
           placeholder="Enter google Maps Link"
@@ -76,8 +77,9 @@
           :class="conditionalDuplicateFormatting(duplicate.score)">
           <p>Name: {{ duplicate.name }}</p>
           <p>Address:</p>
-          <p>{{ duplicate.address.joined }}</p>
+          <p class="nowrap truncate">{{ duplicate.address.joined }}</p>
           <p>Website: {{ duplicate.websiteUrl }}</p>
+          <p>Score: {{ Math.round(duplicate.score * 1000) / 1000 }}</p>
         </UCard>
       </NuxtLink>
       <p v-if="possibleDuplicates.length === 0">No duplicates found</p></UCard
@@ -249,21 +251,27 @@
 
   const fuseOptions = {
     includeScore: true,
+    ignoreLocation: true,
     keys: ["name", "websiteUrl", "address.joined"],
   };
   const fuse = new Fuse(collectionRef.value, fuseOptions);
-  function checkForDuplicates(fieldName) {
-    let results = [];
-    switch (fieldName) {
-      case "name":
-        results = fuse.search(name.value);
-        break;
-      case "websiteUrl":
-        results = fuse.search(websiteUrl.value);
-        break;
-      case "address":
-        results = fuse.search(address.value.joined);
-        break;
+  function checkForDuplicates() {
+    const results = [];
+    if (name.value.trim() !== "") {
+      results.push(...fuse.search(name.value));
+    }
+    if (websiteUrl.value.trim() !== "") {
+      results.push(...fuse.search(websiteUrl.value));
+    }
+    if (
+      address.value.joined.replace("Germany", "").replaceAll(",", "").trim() !==
+      ""
+    ) {
+      results.push(
+        ...fuse.search(
+          address.value.joined.replace("Germany", "").replaceAll(",", "").trim()
+        )
+      );
     }
 
     possibleDuplicates.value = [];
@@ -272,6 +280,19 @@
       item.score = result.score;
       possibleDuplicates.value.push(item);
     });
+
+    // Combine duplicates getting average score
+    const duplicates = possibleDuplicates.value.reduce((acc, current) => {
+      const existing = acc.find((item) => item.id === current.id);
+      if (existing) {
+        existing.score = (existing.score + current.score) / 2;
+      } else {
+        acc.push(current);
+      }
+      return acc;
+    }, []);
+
+    possibleDuplicates.value = duplicates;
   }
 
   function conditionalDuplicateFormatting(score) {

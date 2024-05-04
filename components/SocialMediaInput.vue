@@ -44,7 +44,10 @@
   };
 
   const removeSocialMediaLink = () => {
-    if (socialMediaLinks.value.length === 1) return;
+    if (socialMediaLinks.value.length === 1) {
+      socialMediaLinks.value[0] = { platform: "", link: "" };
+      return;
+    }
     socialMediaLinks.value.pop();
   };
 </script>

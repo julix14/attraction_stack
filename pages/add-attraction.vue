@@ -246,7 +246,11 @@
     );
   }
 
-  const collectionRef = useCollection(collection(firestore, "activities"));
+  const col = collection(firestore, "activities");
+
+  const allActivities = ref(await getDocs(col));
+  allActivities.value = allActivities.value.docs.map((doc) => doc.data());
+
   const possibleDuplicates = ref([]);
 
   const fuseOptions = {
@@ -254,10 +258,11 @@
     ignoreLocation: true,
     keys: ["name", "websiteUrl", "address.joined"],
   };
-  const fuse = new Fuse(collectionRef.value, fuseOptions);
+  const fuse = new Fuse(allActivities.value, fuseOptions);
   function checkForDuplicates() {
     const results = [];
     if (name.value.trim() !== "") {
+      console.log(fuse.search(name.value));
       results.push(...fuse.search(name.value));
     }
     if (websiteUrl.value.trim() !== "") {
@@ -291,7 +296,6 @@
       }
       return acc;
     }, []);
-
     possibleDuplicates.value = duplicates;
   }
 

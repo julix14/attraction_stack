@@ -9,6 +9,7 @@
   import { collection, doc } from "firebase/firestore";
 
   const route = useRoute();
+  const config = useRuntimeConfig();
   const id = route.params.id;
 
   const { firestore } = useFirebaseClient();
@@ -24,7 +25,10 @@
     })
   );
   const attraction = useDocument(
-    doc(collection(firestore, "activities"), id).withConverter({
+    doc(
+      collection(firestore, `activities-${config.public.version}`),
+      id
+    ).withConverter({
       fromFirestore(snapshot, options) {
         const data = snapshot.data(options);
         return {

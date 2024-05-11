@@ -246,7 +246,7 @@
     );
   }
 
-  const col = collection(firestore, "activities");
+  const col = collection(firestore, activityCollectionName);
 
   const allActivities = ref(await getDocs(col));
   allActivities.value = allActivities.value.docs.map((doc) => doc.data());
@@ -309,6 +309,9 @@
     }
   }
 
+  const runtimeConfig = useRuntimeConfig();
+  const activityCollectionName = `activities-${runtimeConfig.public.version}`;
+
   // Firestore storing
   async function addAttraction() {
     console.log("Saving attraction");
@@ -342,7 +345,7 @@
     };
     try {
       const batch = writeBatch(firestore);
-      const activityRef = doc(firestore, "activities", activity.id);
+      const activityRef = doc(firestore, activityCollectionName, activity.id);
       batch.set(activityRef, activity);
       newCategories.forEach((category) => {
         const categoryRef = doc(firestore, "categories", category.id);
@@ -364,7 +367,7 @@
   const idToEdit = route.query.id;
 
   if (idToEdit) {
-    const activityRef = collection(firestore, "activities");
+    const activityRef = collection(firestore, activityCollectionName);
     const q = query(activityRef, where("id", "==", idToEdit));
     const querySnapshot = await getDocs(q);
     const attraction = querySnapshot.docs[0].data();

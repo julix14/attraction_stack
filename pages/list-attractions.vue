@@ -31,9 +31,10 @@
   import { collection, doc, deleteDoc } from "firebase/firestore";
 
   const { firestore } = useFirebaseClient();
+  const config = useRuntimeConfig();
 
   const attractions = useCollection(
-    collection(firestore, "activities").withConverter({
+    collection(firestore, `activities-${config.public.version}`).withConverter({
       fromFirestore(snapshot, options) {
         const data = snapshot.data(options);
         return {

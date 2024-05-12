@@ -232,6 +232,9 @@
       open: true,
     },
   });
+  const runtimeConfig = useRuntimeConfig();
+
+  const activityCollectionName = `activities-${runtimeConfig.public.version}`;
 
   // Categories
   const categories = ref([]);
@@ -308,9 +311,6 @@
       return "bg-green-200";
     }
   }
-
-  const runtimeConfig = useRuntimeConfig();
-  const activityCollectionName = `activities-${runtimeConfig.public.version}`;
 
   // Firestore storing
   async function addAttraction() {
